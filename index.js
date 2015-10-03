@@ -1,6 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var moment = require('moment');
 
 app.get('/', function(req,res){
 	res.sendFile(__dirname + '/index.html');
@@ -8,8 +9,16 @@ app.get('/', function(req,res){
 
 io.on('connection', function(socket){
   socket.on('chat message', function(msg){
-    console.log(msg);
-    io.emit('chat message', msg);
+    //var time = moment().format('MMMM Do YYYY, h:mm:ss a');
+    var time = moment().format('h:mm:ss a');
+
+    var messageToClients = {
+    	'person': msg['person'],
+    	'txt': msg['txt'],
+    	'timestamp': time
+	}
+	console.log(messageToClients);
+    io.emit('chat message', messageToClients);
   });
 });
 
