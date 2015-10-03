@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import datetime
 import random
 from flask import Flask, request, jsonify as flask_jsonify
@@ -66,9 +67,7 @@ def api_say(session_id):
     msg = request.json['txt']
     user = request.json['person']
 
-    print (msg)
     hint = random.choice(get_hints(msg) or ['(dunno)'])
-
 
     db.messages.insert({
         "sessionId": session_id,

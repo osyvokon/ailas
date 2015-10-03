@@ -1,6 +1,6 @@
 all: corpora/warpeace.txt node
 	node index.js &
-	python server.py
+	./server.py
 
 node:
 	npm install
