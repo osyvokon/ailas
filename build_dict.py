@@ -56,7 +56,7 @@ class Corpora:
         self.index = defaultdict(list)     # token => sentence indexes
         l = self.l = Lemmatizer()
         self.bigrams = gensim.models.Phrases()
-        self.phrases = []
+        #self.phrases = []
         self.sentences = []
 
         for f in glob.glob("./corpora/*.txt"):
@@ -65,40 +65,72 @@ class Corpora:
     def _add_document(self, filename):
         stopwords = load_stopwords()
         with open(filename) as f:
-            sentences = split_sentences(f.read())
+            sentences = split_sentences(f.read().lower())
             sentences_tokenized = []
-            for sentence_index, s in enumerate(sentences):
+            for sentence_index, s in enumerate(sentences, len(self.sentences)):
                 tokens = [self.l.lemma(t) for t in tokenize(s) if t not in stopwords]
                 for t in tokens:
                     self.index[t].append(sentence_index)
                 sentences_tokenized.append(tokens)
 
-        bigrams = gensim.models.Phrases(sentences_tokenized)
-        phrases = [s.decode() for s in bigrams.vocab.keys()
-                        if b'_' in s]
-        self.phrases += phrases
+        #bigrams = gensim.models.Phrases(sentences_tokenized)
+        #phrases = [s.decode() for s in bigrams.vocab.keys()
+                        #if b'_' in s]
+        #self.phrases += phrases
         self.sentences += sentences
+        self.bigrams.add_vocab(sentences_tokenized)
 
-        print("{}: {} phrases".format(filename, len(phrases)))
+        #print("{}: {} sentences, {} phrases".format(filename, len(sentences), len(phrases)))
 
-    def find_token_sentences(self, token):
+    @property
+    def phrases(self):
+        phrases = [s.decode() for s, c in self.bigrams.vocab.items()
+                   if c > 1 and b'_' in s]
+        print(list(self.bigrams.vocab.items())[:100])
+        return phrases
+
+    def find_token_sentences(self, token, shorten=True):
         for sent_index in self.index.get(self.l.lemma(token), []):
             s = self.sentences[sent_index]
-            yield ' '.join(s)
+            for t in tokenize(s):
+                if self.l.lemma(t) == token:
+                    s = s.replace(t, "**ALIAS**")
+
+            if shorten:
+                s = '\n'.join(re.findall(r"[\w ]*\*\*ALIAS\*\*[\w ]*", s)).strip()
+
+            yield s
 
     def find_token_pharses(self, token):
-        result = set()
+        result = list()
         t = self.l.lemma(token)
-        for p in self.phrases:
-            if t in p.split('_'):
-                result.add(p)
+        v = self.bigrams.vocab
 
-        return result
+        for sent_index in self.index.get(t, []):
+            orig_sent = self.sentences[sent_index]
 
+            result.append((0, orig_sent))
+            continue
 
-def test_find_token():
-    c = Corpora()
-    # TODO: split by sentences
-    assert c.find_token('ворон')[0] == 'вершечку акації чорного ворона Той сидів'
+            lemm_sent = [self.l.lemma(t) for t in tokenize(orig_sent)]
+            phrases = [x for x in self.bigrams[tokenize(orig_sent)]
+                       if '_' in x and t in x]
+            if not phrases:
+                continue
 
+            l1, l2 = phrases[0].split("_")
+            start = end = 0
+            for i, t in enumerate(tokenize(orig_sent)):
+                lemm_t = self.l.lemma(t)
+                if lemm_t == l1:
+                    start = i
+                elif lemm_t == l2:
+                    end = i
+                else:
+                    pass
+
+            excerpt = ' '.join(orig_sent[start:end])
+            result.append((v[phrases[0]], excerpt))
+
+        return [x[1] for x in sorted(result, reverse=True)]
 

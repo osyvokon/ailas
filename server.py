@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+import datetime
+import random
 from flask import Flask, request, jsonify as flask_jsonify
 from pymongo import MongoClient
 
@@ -10,15 +13,23 @@ def jsonify(obj):
 
 from build_dict import Corpora
 
-#c = Corpora()
+c = Corpora()
 app = Flask(__name__)
 db = MongoClient().ailas
 
-@app.route('/api/get_hint/<session_id>', methods=['GET'])
+def get_hints(word):
+    """Return list of terms describing the word. """
+
+    if not word:
+        return []
+
+    return list(c.find_token_sentences(word))
+
+@app.route('/api/get_hint/<session_id>')
 def api_get_hint(session_id):
     # TODO: get hint by request
     session = db.sessions.find({'id': session_id})
-    current_hint_id = session['current_hint_id'] += 1
+    current_hint_id = session['current_hint_id'] + 1
     try:
         hint = session['hints'][current_hint_id]
     except Exception:
@@ -53,8 +64,11 @@ def api_session_start():
 
 @app.route('/api/session/<session_id>/say', methods=['POST', 'PUT'])
 def api_say(session_id):
-    msg = request.json['message']
-    user = request.json['user']
+    msg = request.json['txt']
+    user = request.json['person']
+
+    hint = random.choice(get_hints(msg) or ['(dunno)'])
+
     db.messages.insert({
         "sessionId": session_id,
         "user": user,
@@ -62,7 +76,7 @@ def api_say(session_id):
         "dt": datetime.datetime.now()
     })
 
-    return jsonify({"ok": True})
+    return jsonify({"hint": hint})
 
 @app.route('/api/session/<session_id>', methods=['DELETE'])
 def api_session_delete(session_id):
