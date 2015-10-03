@@ -1,7 +1,11 @@
 var app = require('express')();
 var http = require('http').Server(app);
+var request = require('request');
 var io = require('socket.io')(http);
 var moment = require('moment');
+
+var API_URL = 'http://localhost:5000/api';
+
 
 app.get('/', function(req,res){
 	res.sendFile(__dirname + '/index.html');
@@ -19,6 +23,15 @@ io.on('connection', function(socket){
 	}
 	console.log(messageToClients);
     io.emit('chat message', messageToClients);
+
+    request.post(API_URL + '/session/test/say', {json: messageToClients},
+      function (error, response, body) { 
+        io.emit('chat message', {
+          'person': 'bot',
+          'txt': body.hint,
+          'timestamp': moment().format('h:mm:ss a')
+        });
+      });
   });
 });
 
