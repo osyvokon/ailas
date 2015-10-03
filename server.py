@@ -14,7 +14,7 @@ c = Corpora()
 app = Flask(__name__)
 db = MongoClient().ailas
 
-def get_associations(word):
+def get_hints(word):
     """Return list of terms describing the word. """
 
     if not word:
