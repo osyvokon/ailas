@@ -12,7 +12,7 @@ def get_associations(word):
     if not word:
         return []
 
-    return c.find_token(word)
+    return c.find_token_pharses(word)
 
 
 

@@ -1,4 +1,5 @@
 import re
+import gensim
 from collections import defaultdict
 
 class Lemmatizer:
@@ -46,10 +47,21 @@ class Corpora:
                 for t in s:
                     self.index[l.lemma(t)].append(sentence_index)
 
-    def find_token(self, token, context=3):
+        self.bigrams = gensim.models.Phrases(self.sentences)
+
+    def find_token_sentences(self, token):
         for sent_index in self.index.get(self.l.lemma(token), []):
             s = self.sentences[sent_index]
             yield ' '.join(s)
+
+    def find_token_pharses(self, token):
+        result = []
+        for s in self.find_token_sentences(token):
+            phrases = [t for t in self.bigrams[s.split()] if '_' in t]
+            result += phrases
+
+        return result
+
 
 
 def test_find_token():
