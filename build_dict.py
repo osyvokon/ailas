@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 
 class Lemmatizer:
     mappings = None
@@ -23,6 +24,9 @@ def test_lemmatizer():
 
 
 
+def split_sentences(s):
+    return s.split('.')
+
 def tokenize(s):
     return re.findall("\w+", s)
 
@@ -33,23 +37,20 @@ def test_tokenize_simple():
 
 class Corpora:
     def __init__(self):
-        with open("./corpora/book1.txt") as f:
-            self.doc = tokenize(f.read())
+        self.index = defaultdict(list)     # token => sentence indexes
+        l = self.l = Lemmatizer()
 
-        self.l = Lemmatizer()
-        self.lemmas = map(self.l.lemma, self.doc)
+        with open("./corpora/book1.txt") as f:
+            self.sentences = list(map(tokenize, split_sentences(f.read())))
+            for sentence_index, s in enumerate(self.sentences):
+                for t in s:
+                    self.index[l.lemma(t)].append(sentence_index)
 
     def find_token(self, token, context=3):
-        phrases = []
-        t = self.l.lemma(token)
-        i = -1
-        while True:
-            try:
-                i = self.doc.index(t, i+1)
-                phrase = ' '.join(self.doc[i-context : i+context])
-                phrases.append(phrase)
-            except ValueError:
-                return phrases
+        for sent_index in self.index.get(self.l.lemma(token), []):
+            s = self.sentences[sent_index]
+            yield ' '.join(s)
+
 
 def test_find_token():
     c = Corpora()
