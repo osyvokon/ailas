@@ -9,10 +9,16 @@ app.get('/', function(req,res){
 
 io.on('connection', function(socket){
   socket.on('chat message', function(msg){
-    console.log(msg);
     //var time = moment().format('MMMM Do YYYY, h:mm:ss a');
     var time = moment().format('h:mm:ss a');
-    io.emit('chat message', msg + " - " + time);
+
+    var messageToClients = {
+    	'person': msg['person'],
+    	'txt': msg['txt'],
+    	'timestamp': time
+	}
+	console.log(messageToClients);
+    io.emit('chat message', messageToClients);
   });
 });
 
