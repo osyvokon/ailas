@@ -29,9 +29,18 @@ def test_lemmatizer():
     assert l.lemma('яблуко') == 'яблуко'
 
 
+def load_stopwords():
+    if not hasattr(load_stopwords, 'cache'):
+        with open('./data/stopwords.txt') as f:
+            load_stopwords.cache = set(f.read().split('\n'))
+    return load_stopwords.cache
+
+def test_stopwords():
+    assert 'або' in load_stopwords()
+    assert 'hello' not in load_stopwords()
 
 def split_sentences(s):
-    return s.split('.')
+    return re.split('[.!?]\n', s)
 
 def tokenize(s):
     return re.findall("\w+", s)
@@ -45,14 +54,21 @@ class Corpora:
     def __init__(self):
         self.index = defaultdict(list)     # token => sentence indexes
         l = self.l = Lemmatizer()
+        stopwords = load_stopwords()
 
         with open("./corpora/book1.txt") as f:
-            self.sentences = list(map(tokenize, split_sentences(f.read())))
+            self.sentences = split_sentences(f.read())
+            self.sentences_tokenized = []
+            #self.sentences = list(map(tokenize, split_sentences(f.read())))
             for sentence_index, s in enumerate(self.sentences):
-                for t in s:
-                    self.index[l.lemma(t)].append(sentence_index)
+                tokens = [l.lemma(t) for t in tokenize(s) if t not in stopwords]
+                for t in tokens:
+                    self.index[t].append(sentence_index)
+                self.sentences_tokenized.append(tokens)
 
-        self.bigrams = gensim.models.Phrases(self.sentences)
+        self.bigrams = gensim.models.Phrases(self.sentences_tokenized)
+        self.phrases = [s.decode() for s in self.bigrams.vocab.keys()
+                        if b'_' in s]
 
     def find_token_sentences(self, token):
         for sent_index in self.index.get(self.l.lemma(token), []):
@@ -60,10 +76,11 @@ class Corpora:
             yield ' '.join(s)
 
     def find_token_pharses(self, token):
-        result = []
-        for s in self.find_token_sentences(token):
-            phrases = [t for t in self.bigrams[s.split()] if '_' in t]
-            result += phrases
+        result = set()
+        t = self.l.lemma(token)
+        for p in self.phrases:
+            if t in p.split('_'):
+                result.add(p)
 
         return result
 
