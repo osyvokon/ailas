@@ -63,3 +63,5 @@ target/
 .venv
 
 .idea
+
+node_modules/
