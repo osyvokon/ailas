@@ -15,7 +15,7 @@ def modify_text(text, word, rpl='BANANA'):
 
     def replace(word):
         nonlocal text, rpl
-        text = re.sub(word, rpl, text)
+        text = re.sub(word, rpl, text, flags=re.IGNORECASE)
 
     for current_word in text_prepare(text):
         lemma = lemmtizer.lemma(current_word)
