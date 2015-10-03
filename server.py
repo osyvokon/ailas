@@ -14,7 +14,7 @@ from build_dict import Corpora
 app = Flask(__name__)
 db = MongoClient().ailas
 
-@app.route('/api/get_hint/<session_id>')
+@app.route('/api/get_hint/<session_id>', methods=['GET'])
 def api_get_hint(session_id):
     # TODO: get hint by request
     session = db.sessions.find({'id': session_id})
