@@ -16,7 +16,11 @@ class Lemmatizer:
     def lemma(self, word):
         word = word.lower().strip()
         stemmer = UkrainianStemmer(word)
-        return self.mappings.get(word, stemmer.stem_word())
+        if word in self.mappings:
+            default_word = word
+        else:
+            default_word = stemmer.stem_word()
+        return self.mappings.get(word, default_word)
 
 
 def test_lemmatizer():
