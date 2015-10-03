@@ -1,3 +1,5 @@
+from ukr_stemmer import UkrainianStemmer
+
 class Lemmatizer:
     mappings = None
 
@@ -9,11 +11,12 @@ class Lemmatizer:
                     main, _, form = line.lower().strip().partition('\t')
                     d[form] = main
             Lemmatizer.mappings = d
-            print(d)
+            # print(d)
 
     def lemma(self, word):
         word = word.lower().strip()
-        return self.mappings.get(word, word)
+        stemmer = UkrainianStemmer(word)
+        return self.mappings.get(word, stemmer.stem_word())
 
 
 def test_lemmatizer():
