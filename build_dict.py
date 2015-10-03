@@ -10,19 +10,16 @@ class Lemmatizer:
                 for line in f:
                     main, _, form = line.lower().strip().partition('\t')
                     d[form] = main
+                    d[main] = main
             Lemmatizer.mappings = d
             # print(d)
 
     def lemma(self, word):
         word = word.lower().strip()
         stemmer = UkrainianStemmer(word)
-        if word in self.mappings:
-            default_word = word
-        else:
-            default_word = stemmer.stem_word()
-        return self.mappings.get(word, default_word)
+        return self.mappings.get(word, stemmer.stem_word())
 
 
 def test_lemmatizer():
     l = Lemmatizer()
-    assert l.lemma('адама') == 'адам'
+    assert l.lemma('яблуко') == 'яблуко'
