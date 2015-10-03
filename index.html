@@ -22,8 +22,12 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var socket = io();
+      var person = prompt("Please enter a nickname", "Your name");
+      if (person != null) {
+          socket.emit('chat message', person + " just joined");
+      }
       $('form').submit(function(){
-        socket.emit('chat message', $('#m').val());
+        socket.emit('chat message', person + ': ' + $('#m').val());
         $('#m').val('');
         return false;
       });
