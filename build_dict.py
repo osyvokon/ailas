@@ -89,12 +89,15 @@ class Corpora:
         print(list(self.bigrams.vocab.items())[:100])
         return phrases
 
-    def find_token_sentences(self, token):
+    def find_token_sentences(self, token, shorten=True):
         for sent_index in self.index.get(self.l.lemma(token), []):
             s = self.sentences[sent_index]
             for t in tokenize(s):
                 if self.l.lemma(t) == token:
                     s = s.replace(t, "**ALIAS**")
+
+            if shorten:
+                s = '\n'.join(re.findall(r"[\w ]*\*\*ALIAS\*\*[\w ]*", s)).strip()
 
             yield s
 

@@ -26,7 +26,7 @@ def get_associations(word):
 def api_get_hint(session_id):
     # TODO: get hint by request
     session = db.sessions.find({'id': session_id})
-    current_hint_id = session['current_hint_id'] += 1
+    current_hint_id = session['current_hint_id'] + 1
     try:
         hint = session['hints'][current_hint_id]
     except Exception:
