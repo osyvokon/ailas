@@ -1,6 +1,7 @@
 {
   "name": "brianb-socket-io-chat",
   "version": "0.0.1",
+  "private": true,
   "description": "Simple chat app",
   "dependencies": {
     "express": "^4.10.2",
