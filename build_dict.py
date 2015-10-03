@@ -1,8 +1,14 @@
 import re
+import os
 import glob
 import gensim
+import pickle
 from collections import defaultdict
 from ukr_stemmer import UkrainianStemmer
+
+
+MAX_CORPUS_SIZE = 500 * 1000 * 1000 # bytes
+MAX_SENTENCES_PER_WORD = 100
 
 class Lemmatizer:
     mappings = None
@@ -27,6 +33,7 @@ class Lemmatizer:
 def test_lemmatizer():
     l = Lemmatizer()
     assert l.lemma('адама') == 'адам'
+    assert l.lemma('АДАма') == 'адам'
     assert l.lemma('яблуко') == 'яблуко'
 
 
@@ -38,7 +45,7 @@ def load_stopwords():
 
 def test_stopwords():
     assert 'або' in load_stopwords()
-    assert 'hello' not in load_stopwords()
+    assert 'червоний' not in load_stopwords()
 
 def split_sentences(s):
     return re.split('[.!?]\n', s)
@@ -59,8 +66,22 @@ class Corpora:
         #self.phrases = []
         self.sentences = []
 
-        for f in glob.glob("./corpora/*.txt"):
-            self._add_document(f)
+        os.makedirs('./cache', exist_ok=True)
+        if os.path.exists('./cache/index'):
+            self.index = pickle.load(open('./cache/index', 'rb'))
+            self.sentences = pickle.load(open('./cache/sentences', 'rb'))
+        else:
+            loaded_size = 0
+            for i, f in enumerate(glob.glob("./corpora/Text/Fiction/*")):
+                if os.path.isfile(f):
+                    loaded_size += os.path.getsize(f)
+                    if loaded_size > MAX_CORPUS_SIZE:
+                        break
+                    print("loading", f)
+                    self._add_document(f)
+            pickle.dump(self.index, open("./cache/index", "wb"))
+            pickle.dump(self.sentences, open("./cache/sentences", "wb"))
+            print("Corpora loaded")
 
     def _add_document(self, filename):
         stopwords = load_stopwords()
@@ -70,7 +91,8 @@ class Corpora:
             for sentence_index, s in enumerate(sentences, len(self.sentences)):
                 tokens = [self.l.lemma(t) for t in tokenize(s) if t not in stopwords]
                 for t in tokens:
-                    self.index[t].append(sentence_index)
+                    if len(self.index[t]) < MAX_SENTENCES_PER_WORD:
+                        self.index[t].append(sentence_index)
                 sentences_tokenized.append(tokens)
 
         #bigrams = gensim.models.Phrases(sentences_tokenized)

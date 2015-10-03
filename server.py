@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+import datetime
+import random
 from flask import Flask, request, jsonify as flask_jsonify
 from pymongo import MongoClient
 
@@ -20,7 +23,7 @@ def get_hints(word):
     if not word:
         return []
 
-    return c.find_token_sentences(word)
+    return list(c.find_token_sentences(word))
 
 @app.route('/api/get_hint/<session_id>')
 def api_get_hint(session_id):
@@ -61,8 +64,11 @@ def api_session_start():
 
 @app.route('/api/session/<session_id>/say', methods=['POST', 'PUT'])
 def api_say(session_id):
-    msg = request.json['message']
-    user = request.json['user']
+    msg = request.json['txt']
+    user = request.json['person']
+
+    hint = random.choice(get_hints(msg) or ['(dunno)'])
+
     db.messages.insert({
         "sessionId": session_id,
         "user": user,
@@ -70,7 +76,7 @@ def api_say(session_id):
         "dt": datetime.datetime.now()
     })
 
-    return jsonify({"ok": True})
+    return jsonify({"hint": hint})
 
 @app.route('/api/session/<session_id>', methods=['DELETE'])
 def api_session_delete(session_id):
@@ -81,7 +87,7 @@ def api_session_delete(session_id):
 @app.route('/')
 def form():
     query = request.args.get('query')
-    associations = get_associations(query)
+    associations = get_hints(query)
 
     return """
 <html>
