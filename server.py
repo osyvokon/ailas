@@ -10,7 +10,7 @@ def jsonify(obj):
 
 from build_dict import Corpora
 
-#c = Corpora()
+c = Corpora()
 app = Flask(__name__)
 db = MongoClient().ailas
 

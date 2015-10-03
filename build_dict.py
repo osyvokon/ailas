@@ -56,7 +56,7 @@ class Corpora:
         self.index = defaultdict(list)     # token => sentence indexes
         l = self.l = Lemmatizer()
         self.bigrams = gensim.models.Phrases()
-        self.phrases = []
+        #self.phrases = []
         self.sentences = []
 
         for f in glob.glob("./corpora/*.txt"):
@@ -73,13 +73,21 @@ class Corpora:
                     self.index[t].append(sentence_index)
                 sentences_tokenized.append(tokens)
 
-        bigrams = gensim.models.Phrases(sentences_tokenized)
-        phrases = [s.decode() for s in bigrams.vocab.keys()
-                        if b'_' in s]
-        self.phrases += phrases
+        #bigrams = gensim.models.Phrases(sentences_tokenized)
+        #phrases = [s.decode() for s in bigrams.vocab.keys()
+                        #if b'_' in s]
+        #self.phrases += phrases
         self.sentences += sentences
+        self.bigrams.add_vocab(sentences_tokenized)
 
-        print("{}: {} phrases".format(filename, len(phrases)))
+        #print("{}: {} sentences, {} phrases".format(filename, len(sentences), len(phrases)))
+
+    @property
+    def phrases(self):
+        phrases = [s.decode() for s, c in self.bigrams.vocab.items()
+                   if c > 1 and b'_' in s]
+        print(list(self.bigrams.vocab.items())[:100])
+        return phrases
 
     def find_token_sentences(self, token):
         for sent_index in self.index.get(self.l.lemma(token), []):
@@ -87,18 +95,13 @@ class Corpora:
             yield ' '.join(s)
 
     def find_token_pharses(self, token):
-        result = set()
+        result = list()
         t = self.l.lemma(token)
+        v = self.bigrams.vocab
+
         for p in self.phrases:
             if t in p.split('_'):
-                result.add(p)
+                result.append((v[p], p))
 
-        return result
-
-
-def test_find_token():
-    c = Corpora()
-    # TODO: split by sentences
-    assert c.find_token('ворон')[0] == 'вершечку акації чорного ворона Той сидів'
-
+        return [x[1] for x in sorted(result, reverse=True)]
 
