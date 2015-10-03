@@ -1,6 +1,7 @@
 import re
 import gensim
 from collections import defaultdict
+from ukr_stemmer import UkrainianStemmer
 
 class Lemmatizer:
     mappings = None
@@ -12,16 +13,20 @@ class Lemmatizer:
                 for line in f:
                     main, _, form = line.lower().strip().partition('\t')
                     d[form] = main
+                    d[main] = main
             Lemmatizer.mappings = d
+            # print(d)
 
     def lemma(self, word):
         word = word.lower().strip()
-        return self.mappings.get(word, word)
+        stemmer = UkrainianStemmer(word)
+        return self.mappings.get(word, stemmer.stem_word())
 
 
 def test_lemmatizer():
     l = Lemmatizer()
     assert l.lemma('адама') == 'адам'
+    assert l.lemma('яблуко') == 'яблуко'
 
 
 
