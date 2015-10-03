@@ -22,6 +22,18 @@ def get_associations(word):
 
     return c.find_token_sentences(word)
 
+@app.route('/api/get_hint/<session_id>')
+def api_get_hint(session_id):
+    # TODO: get hint by request
+    session = db.sessions.find({'id': session_id})
+    current_hint_id = session['current_hint_id'] += 1
+    try:
+        hint = session['hints'][current_hint_id]
+    except Exception:
+        return flask_jsonify({'hint': 'Нажаль все використані всі можливі підказки.'})
+    db.sessions.update({'id', session_id},
+                       {'$set': {'current_hint_id': current_hint_id}})
+    return flask_jsonify({'hint': hint})
 
 @app.route('/api/session', methods=['GET'])
 def api_session_list():
@@ -31,6 +43,8 @@ def api_session_list():
 
 @app.route('/api/session', methods=['POST', 'PUT'])
 def api_session_start():
+    # TODO: create word, addrs, hints, current_hint_id fields in sessions
+    # TODO: generate hints list
     session_id = request.json['id']
     callback = request.json['callback']
     session = {
@@ -87,5 +101,3 @@ def form():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
-
