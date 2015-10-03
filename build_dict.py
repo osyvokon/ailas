@@ -96,7 +96,6 @@ class Corpora:
         return result
 
 
-
 def test_find_token():
     c = Corpora()
     # TODO: split by sentences
