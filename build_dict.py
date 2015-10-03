@@ -1,4 +1,5 @@
 import re
+import glob
 import gensim
 from collections import defaultdict
 from ukr_stemmer import UkrainianStemmer
@@ -54,21 +55,31 @@ class Corpora:
     def __init__(self):
         self.index = defaultdict(list)     # token => sentence indexes
         l = self.l = Lemmatizer()
-        stopwords = load_stopwords()
+        self.bigrams = gensim.models.Phrases()
+        self.phrases = []
+        self.sentences = []
 
-        with open("./corpora/book1.txt") as f:
-            self.sentences = split_sentences(f.read())
-            self.sentences_tokenized = []
-            #self.sentences = list(map(tokenize, split_sentences(f.read())))
-            for sentence_index, s in enumerate(self.sentences):
-                tokens = [l.lemma(t) for t in tokenize(s) if t not in stopwords]
+        for f in glob.glob("./corpora/*.txt"):
+            self._add_document(f)
+
+    def _add_document(self, filename):
+        stopwords = load_stopwords()
+        with open(filename) as f:
+            sentences = split_sentences(f.read())
+            sentences_tokenized = []
+            for sentence_index, s in enumerate(sentences):
+                tokens = [self.l.lemma(t) for t in tokenize(s) if t not in stopwords]
                 for t in tokens:
                     self.index[t].append(sentence_index)
-                self.sentences_tokenized.append(tokens)
+                sentences_tokenized.append(tokens)
 
-        self.bigrams = gensim.models.Phrases(self.sentences_tokenized)
-        self.phrases = [s.decode() for s in self.bigrams.vocab.keys()
+        bigrams = gensim.models.Phrases(sentences_tokenized)
+        phrases = [s.decode() for s in bigrams.vocab.keys()
                         if b'_' in s]
+        self.phrases += phrases
+        self.sentences += sentences
+
+        print("{}: {} phrases".format(filename, len(phrases)))
 
     def find_token_sentences(self, token):
         for sent_index in self.index.get(self.l.lemma(token), []):
