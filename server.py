@@ -87,7 +87,7 @@ def api_session_delete(session_id):
 @app.route('/')
 def form():
     query = request.args.get('query')
-    associations = get_associations(query)
+    associations = get_hints(query)
 
     return """
 <html>
