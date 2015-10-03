@@ -65,9 +65,9 @@ class Corpora:
     def _add_document(self, filename):
         stopwords = load_stopwords()
         with open(filename) as f:
-            sentences = split_sentences(f.read())
+            sentences = split_sentences(f.read().lower())
             sentences_tokenized = []
-            for sentence_index, s in enumerate(sentences):
+            for sentence_index, s in enumerate(sentences, len(self.sentences)):
                 tokens = [self.l.lemma(t) for t in tokenize(s) if t not in stopwords]
                 for t in tokens:
                     self.index[t].append(sentence_index)
@@ -92,16 +92,42 @@ class Corpora:
     def find_token_sentences(self, token):
         for sent_index in self.index.get(self.l.lemma(token), []):
             s = self.sentences[sent_index]
-            yield ' '.join(s)
+            for t in tokenize(s):
+                if self.l.lemma(t) == token:
+                    s = s.replace(t, "**ALIAS**")
+
+            yield s
 
     def find_token_pharses(self, token):
         result = list()
         t = self.l.lemma(token)
         v = self.bigrams.vocab
 
-        for p in self.phrases:
-            if t in p.split('_'):
-                result.append((v[p], p))
+        for sent_index in self.index.get(t, []):
+            orig_sent = self.sentences[sent_index]
+
+            result.append((0, orig_sent))
+            continue
+
+            lemm_sent = [self.l.lemma(t) for t in tokenize(orig_sent)]
+            phrases = [x for x in self.bigrams[tokenize(orig_sent)]
+                       if '_' in x and t in x]
+            if not phrases:
+                continue
+
+            l1, l2 = phrases[0].split("_")
+            start = end = 0
+            for i, t in enumerate(tokenize(orig_sent)):
+                lemm_t = self.l.lemma(t)
+                if lemm_t == l1:
+                    start = i
+                elif lemm_t == l2:
+                    end = i
+                else:
+                    pass
+
+            excerpt = ' '.join(orig_sent[start:end])
+            result.append((v[phrases[0]], excerpt))
 
         return [x[1] for x in sorted(result, reverse=True)]
 
