@@ -138,6 +138,7 @@ def api_session_scores(session_id):
 def api_say(session_id):
     msg = request.json['txt'].lower()
     user = request.json['person']
+    session_id =  request.json.get('room', 'undefined')
 
     print(msg, '-------')
 
