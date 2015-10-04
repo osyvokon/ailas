@@ -48,8 +48,8 @@ def test_stopwords():
     assert 'або' in load_stopwords()
     assert 'червоний' not in load_stopwords()
 
-def split_sentences(s):
-    return [s.strip() for s in re.split('[.!?\n]', s)]
+def split_sentences(text):
+    return [s.strip() for s in re.split('[.!?\n]', text)]
 
 def test_split_sentences():
     assert split_sentences("Hello, world! How. Are? You") == [
