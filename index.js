@@ -29,7 +29,7 @@ app.get('/main.css', function(req,res){
 
 io.on('connection', function(socket){
   io.emit('chat message', {
-    person: 'bot',
+    person: 'A.I.',
     txt: 'Known commands: \guess hints'
   });
 
@@ -50,7 +50,7 @@ io.on('connection', function(socket){
     request.post(API_URL + '/session/test/say', {json: messageToClients},
       function (error, response, body) { 
         io.emit('chat message', {
-          'person': 'bot',
+          'person': 'A.I.',
           'txt': body && body.hint,
           'timestamp': moment().format('h:mm:ss a')
         });
