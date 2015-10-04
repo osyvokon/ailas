@@ -11,6 +11,7 @@ analyzer = W2V()
 class MainHandler(tornado.web.RequestHandler):
     def get(self, word):
         data = analyzer.get_similair(word)
+        self.set_header('Content-Type', 'application/json')
         self.write(json.dumps(data))
 
 application = tornado.web.Application([
