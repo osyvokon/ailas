@@ -18,8 +18,10 @@ def jsonify(obj):
 
 
 from build_dict import Corpora
+from synonyms import Synonyms
 
 c = Corpora()
+synonyms = Synonyms()
 app = Flask(__name__)
 db = MongoClient().ailas
 
@@ -32,11 +34,14 @@ def get_hints(word, n=10):
     url = WORD_EMBEDDINGS_API + urllib.parse.quote(word)
     embeddings = [x[0] for x in requests.get(url).json()]
 
-    sentences_hints = list(c.find_token_sentences(word, n))
+    sentences_hints = list(c.find_token_sentences(word, n=n))
+    synonym_hints = synonyms.get_synonyms(word)
 
-    hints = ([','.join(embeddings[:2])]  +
+    hints = ([', '.join(embeddings[:2])] +
              sentences_hints[:3] +
-             [','.join(embeddings[2:])] +
+             [', '.join(synonym_hints)] +
+             [', '.join(embeddings[2:])] +
+             ['Перша літера: "{}"'.format(word[0])] +
              sentences_hints[3:])
 
     return hints
@@ -65,8 +70,9 @@ def api_get_hint(session_id, extra_msg=None):
     try:
         hint = session['hints'][current_hint_id]
     except LookupError:
-        return flask_jsonify({'hint': 'На жаль, використані всі можливі підказки. '
-                                      'Моє слово було: {}'.format(session.get('word'))})
+        return restart_session(session_id,
+                               extra_msg='На жаль, використані всі можливі підказки. '
+                                         'Моє слово було: {}'.format(session.get('word')))
     db.sessions.update({'id': session_id},
                        {'$inc': {'current_hint_id': 1}})
 
@@ -151,7 +157,7 @@ def api_say(session_id):
         # Human's guess
         session = db.sessions.find_one({'id': session_id})
         if not session or not session.get('word'):
-            return jsonify({"hint": "Something went wrong. Please /restart session"})
+            return restart_session(session_id, extra_msg="Session started")
 
         if are_same_words(msg, session.get('word')):
             update_score(session_id, user, +50)
