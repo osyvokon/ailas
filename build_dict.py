@@ -135,9 +135,13 @@ class Corpora:
         print(list(self.bigrams.vocab.items())[:100])
         return phrases
 
-    def pick_word(self):
-        # take 20 random words and choose whatever has more sentences
-        vocab = list(self.index.keys())
+    def pick_word(self, best=False):
+        # take 200 random words and choose whatever has more sentences
+        if best:
+            vocab = ['щирість', 'рюкзак', 'спокій', 'танець', 'перемогти']
+        else:
+            vocab = list(self.index.keys())
+
         # np.random.seed(42)
         cands = np.random.choice(vocab, size=200)
         word = sorted(cands, key=lambda w: len(self.index[w]))[-1]
