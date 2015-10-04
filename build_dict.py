@@ -25,10 +25,14 @@ class Lemmatizer:
             Lemmatizer.mappings = d
             # print(d)
 
-    def lemma(self, word):
+    def lemma(self, word, stem=True):
         word = word.lower().strip()
-        stemmer = UkrainianStemmer(word)
-        return self.mappings.get(word, stemmer.stem_word())
+        if stem:
+            stemmer = UkrainianStemmer(word)
+            stemmed = stemmer.stem_word()
+        else:
+            stemmed = word
+        return self.mappings.get(word, stemmed)
 
 
 def test_lemmatizer():
@@ -130,6 +134,16 @@ class Corpora:
         print(list(self.bigrams.vocab.items())[:100])
         return phrases
 
+    def pick_word(self):
+        # take 20 random words and choose whatever has more sentences
+        vocab = list(self.index.keys())
+        cands = np.random.choice(vocab, size=20)
+        word = sorted(cands, key=lambda w: len(self.index[w]))[-1]
+
+        # TODO: find the original word in sentences. for now we're 
+        # returning stemmed word
+        return word
+
     def find_token_sentences(self, token, shorten=True, n=10):
         t =  self.l.lemma(token)
         results = []
@@ -138,7 +152,11 @@ class Corpora:
         for sent_index in indexes:
             s = self.sentences[sent_index]
             print(s)
-            for x in tokenize(s):
+            s_tokens = tokenize(s)
+            if len(s_tokens) == 1:
+                continue
+
+            for x in s_tokens:
                 if self.l.lemma(x) == t:
                     s = s.replace(x, "**ALIAS**")
 
@@ -194,7 +212,8 @@ class Corpora:
             lemm_sent = [self.l.lemma(t) for t in orig_sent]
             i = lemm_sent.index(token)
 
-            cs = [self.l.lemma(c) for c in orig_sent[i-2:i] + orig_sent[i+1:i+3]]
+            cs = [self.l.lemma(c, stem=False) for c in orig_sent[i-2:i] + orig_sent[i+1:i+3]]
             cs = [c for c in cs if c not in stopwords]
             candidates.update(cs)
         return candidates
+    

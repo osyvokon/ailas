@@ -73,6 +73,7 @@
           var txt = msg['txt'];
           var time = msg['timestamp']
           $('#messages').append($('<li class="list-group-item">').text(recievedPerson + ": " + txt + " - " + time));
+          window.scrollTo(0,document.body.scrollHeight);
         });
       </script>
     </div>
