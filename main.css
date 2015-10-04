@@ -3,6 +3,14 @@
   font-size: 11px;
 }
 
+#logo {
+  width: 100%;
+  height:200px;
+  background: url(https://lh5.googleusercontent.com/OYApW7m_5U7J-gQSTNCePT55QQD1VCTVC88PD4cZcpbmzJeyye-Pkm-6WlHDe1F3F3AT0A=w1342-h563) no-repeat;
+  background-size: 200px 200px;
+  background-position: center top; 
+}
+
 form {
   position: fixed;
   bottom:0;
