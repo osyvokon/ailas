@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import datetime
 import random
+import urllib
+import requests
 from collections import Counter
 from flask import Flask, request, jsonify as flask_jsonify
 from pymongo import MongoClient
+
+
+WORD_EMBEDDINGS_API = 'http://localhost:8888/'
 
 
 def jsonify(obj):
@@ -24,7 +29,17 @@ def get_hints(word, n=10):
     if not word:
         return []
 
-    return list(c.find_token_sentences(word, n))
+    url = WORD_EMBEDDINGS_API + urllib.parse.quote(word)
+    embeddings = [x[0] for x in requests.get(url).json()]
+
+    sentences_hints = list(c.find_token_sentences(word, n))
+
+    hints = ([','.join(embeddings[:2])]  +
+             sentences_hints[:3] +
+             [','.join(embeddings[2:])] +
+             sentences_hints[3:])
+
+    return hints
 
 def guess_by_hints(hints):
 
@@ -56,7 +71,7 @@ def api_get_hint(session_id, extra_msg=None):
                        {'$inc': {'current_hint_id': 1}})
 
     if extra_msg:
-        hint = extra_msg + '\n' + hint
+        hint = extra_msg + '\n' + str(hint)
 
     return flask_jsonify({'hint': hint})
 
@@ -91,6 +106,17 @@ def restart_session(session_id, callback=None, extra_msg=''):
     return api_get_hint(session_id, extra_msg + '\n' + "GAME RESTARTED")
 
 
+
+@app.route("/api/session/<session_id>/scores", methods=['GET'])
+def api_session_scores(session_id):
+    scores = []
+    for s in db.scores.find({'sessionId': session_id}):
+        scores.append({
+            "user": s.get('user'),
+            "score": s.get('score')
+        })
+
+    return jsonify({'scores': scores})
 
 @app.route('/api/session/<session_id>/say', methods=['POST', 'PUT'])
 def api_say(session_id):
@@ -128,11 +154,17 @@ def api_say(session_id):
             return jsonify({"hint": "Something went wrong. Please /restart session"})
 
         if are_same_words(msg, session.get('word')):
+            update_score(session_id, user, +50)
             return jsonify({"hint": "We've got THE WINNER! My word is {}".format(session['word']),
                             "win": True})
         else:
+            update_score(session_id, user, -5)
             return api_get_hint(session_id)
 
+def update_score(session_id, user, score_inc):
+    db.scores.update({'sessionId': session_id, 'user': user},
+                     {'$inc': {"score": score_inc}},
+                     upsert=True)
 
 @app.route('/api/session/<session_id>', methods=['DELETE'])
 def api_session_delete(session_id):
