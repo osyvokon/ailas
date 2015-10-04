@@ -21,7 +21,7 @@
     <div id="logo"></div>
     <h4 class="text-success">Users online</h4>
     <ul id="online-people" class="list-group">
-      <li class="list-group-item"><img class="img-circle img-thumbnail" src="img/logo.png" alt="" />Lorem ipsum.</li>
+      <!-- <li class="list-group-item"><img class="img-circle img-thumbnail" src="img/logo.png" alt="" />Lorem ipsum.</li> -->
     </ul>
   </div>
   <!-- /#sidebar-wrapper -->
@@ -100,7 +100,8 @@
           var arrayLength = namelist.length;
           $('#online-people').html('');
           for (var i = 0; i < arrayLength; i++) {
-            $('#online-people').append($('<li class="list-group-item">').text(namelist[i]));
+            $('#online-people').append($('<li class="list-group-item">')
+              .html('<img class="img-circle img-thumbnail" src="img/users/' + (i % 3) +'.png" alt="" />' + namelist[i]));
           }
         });
 
