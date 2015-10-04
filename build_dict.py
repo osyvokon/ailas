@@ -8,7 +8,7 @@ from collections import defaultdict
 from ukr_stemmer import UkrainianStemmer
 
 
-MAX_CORPUS_SIZE = 500 * 1000 * 1000 # bytes
+MAX_CORPUS_SIZE = 400 * 1000 * 1000 # bytes
 MAX_SENTENCES_PER_WORD = 100
 
 class Lemmatizer:
@@ -69,7 +69,7 @@ def test_tokenize_simple():
 class Corpora:
     def __init__(self, find_phrases=False):
         self.index = defaultdict(list)     # token => sentence indexes
-        l = self.l = Lemmatizer()
+        self.l = Lemmatizer()
         self.bigrams = gensim.models.Phrases()
         #self.phrases = []
         self.sentences = []
@@ -80,21 +80,30 @@ class Corpora:
             self.sentences = pickle.load(open('./cache/sentences', 'rb'))
         else:
             loaded_size = 0
-            for i, f in enumerate(glob.glob("./corpora/Text/Fiction/*")):
+            files = glob.glob("./corpora/Text/*/*")
+            np.random.shuffle(files)
+            for i, f in enumerate(files):
                 if os.path.isfile(f):
                     loaded_size += os.path.getsize(f)
                     if loaded_size > MAX_CORPUS_SIZE:
                         break
-                    print("loading", f)
+                    print("loading", f, round(loaded_size / 1000 / 1000),  "mb")
                     self._add_document(f, find_phrases)
             pickle.dump(self.index, open("./cache/index", "wb"))
             pickle.dump(self.sentences, open("./cache/sentences", "wb"))
+
             print("Corpora loaded")
+        print("{} sentences".format(len(self.sentences)))
 
     def _add_document(self, filename, find_phrases=False):
         stopwords = load_stopwords()
         with open(filename) as f:
-            sentences = split_sentences(f.read().lower())
+            try:
+                content = f.read()
+            except UnicodeDecodeError:
+                return
+
+            sentences = split_sentences(content.lower())
             sentences_tokenized = []
             for sentence_index, s in enumerate(sentences, len(self.sentences)):
                 tokens = [self.l.lemma(t) for t in tokenize(s) if t not in stopwords]
@@ -122,22 +131,23 @@ class Corpora:
         return phrases
 
     def find_token_sentences(self, token, shorten=True, n=10):
+        t =  self.l.lemma(token)
         results = []
-        indexes = self.index.get(self.l.lemma(token), [])
+        indexes = self.index.get(t, [])
         np.random.shuffle(indexes)
         for sent_index in indexes:
             s = self.sentences[sent_index]
             print(s)
-            for t in tokenize(s):
-                if self.l.lemma(t) == token:
-                    s = s.replace(t, "**ALIAS**")
+            for x in tokenize(s):
+                if self.l.lemma(x) == t:
+                    s = s.replace(x, "**ALIAS**")
 
             if shorten:
                 s = '\n'.join(re.findall(r"[\w ]*\*\*ALIAS\*\*[\w ]*", s)).strip()
 
             results.append(s)
 
-            if len(s) >= n:
+            if len(results) >= n:
                 break
 
         return results
@@ -175,3 +185,14 @@ class Corpora:
 
         return [x[1] for x in sorted(result, reverse=True)]
 
+    def get_candidates(self, word):
+        token = self.l.lemma(word)
+        candidates = Counter()
+        stopwords = load_stopwords()
+        for sent_index in self.index.get(t, []):
+            orig_sent = self.sentences[sent_index]
+            lemm_sent = [self.l.lemma(t) for t in tokenize(orig_sent)]
+            i = lemm_sent.index(token)
+            cs = [c for c in orig_sent[i-2:i+2] if not c in stopwords]
+            candidates.update(cs)
+        return candidates
