@@ -64,7 +64,7 @@ io.on('connection', function(socket){
     request.post(API_URL + '/session/test/say', {json: messageToClients},
       function (error, response, body) { 
         io.emit('chat message', {
-          'person': 'bot',
+          'person': 'A.I.',
           'txt': body && body.hint,
           'timestamp': moment().format('h:mm:ss a'),
           'room': msg['room']

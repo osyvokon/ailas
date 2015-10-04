@@ -84,7 +84,8 @@ class Corpora:
             self.sentences = pickle.load(open('./cache/sentences', 'rb'))
         else:
             loaded_size = 0
-            files = glob.glob("./corpora/Text/*/*")
+            files = glob.glob("./corpora/*/*")
+            # np.random.seed(42)
             np.random.shuffle(files)
             for i, f in enumerate(files):
                 if os.path.isfile(f):
@@ -137,6 +138,7 @@ class Corpora:
     def pick_word(self):
         # take 20 random words and choose whatever has more sentences
         vocab = list(self.index.keys())
+        # np.random.seed(42)
         cands = np.random.choice(vocab, size=200)
         word = sorted(cands, key=lambda w: len(self.index[w]))[-1]
 
@@ -145,15 +147,17 @@ class Corpora:
         return word
 
     def find_token_sentences(self, token, shorten=True, n=10):
+        random_state = np.random.RandomState(42)
         t =  self.l.lemma(token)
         results = []
         indexes = self.index.get(t, [])
-        np.random.shuffle(indexes)
+        stopwords = load_stopwords()
+        random_state.shuffle(indexes)
         for sent_index in indexes:
             s = self.sentences[sent_index]
             print(s)
             s_tokens = tokenize(s)
-            if len(s_tokens) < 3:
+            if len([x for x in s_tokens if x not in stopwords]) < 3:
                 continue
 
             for x in s_tokens:

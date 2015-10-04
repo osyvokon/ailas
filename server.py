@@ -25,6 +25,15 @@ synonyms = Synonyms()
 app = Flask(__name__)
 db = MongoClient().ailas
 
+
+def remove_empty(l):
+    if not l:
+        return []
+    if len(l) == 1 and not l[0]:
+        return []
+    return l
+
+
 def get_hints(word, n=10):
     """Return list of terms describing the word. """
 
@@ -37,10 +46,10 @@ def get_hints(word, n=10):
     sentences_hints = list(c.find_token_sentences(word, n=n))
     synonym_hints = synonyms.get_synonyms(word)
 
-    hints = ([', '.join(embeddings[:2])] +
+    hints = (remove_empty([', '.join(embeddings[:2])]) +
              sentences_hints[:3] +
-             [', '.join(synonym_hints)] +
-             [', '.join(embeddings[2:])] +
+             remove_empty([', '.join(synonym_hints)]) +
+             remove_empty([', '.join(embeddings[2:])]) +
              ['Перша літера: "{}"'.format(word[0])] +
              sentences_hints[3:])
 
@@ -76,8 +85,9 @@ def api_get_hint(session_id, extra_msg=None):
     db.sessions.update({'id': session_id},
                        {'$inc': {'current_hint_id': 1}})
 
+    hint = "Підказка №{}:  {}".format(current_hint_id  + 1, hint)
     if extra_msg:
-        hint = extra_msg + '\n' + str(hint)
+        hint = extra_msg + '\n' + hint
 
     return flask_jsonify({'hint': hint})
 
@@ -147,6 +157,11 @@ def api_say(session_id):
         return jsonify({"hint": hint})
     elif msg.startswith('/restart'):
         return restart_session(session_id)
+    elif msg.startswith('/cheat'):
+        session = db.sessions.find_one({'id': session_id})
+        w = session.get('word', '')
+        return jsonify({"hint": "Пс-с-с-с.... Починається на {}, закінчується на {}..."
+                        .format(w[0], w[1:])})
     elif msg.startswith('/giveup'):
         session = db.sessions.find_one({'id': session_id})
         word = session['word']

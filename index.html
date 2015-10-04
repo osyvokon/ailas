@@ -10,19 +10,18 @@
 
   <!-- Sidebar -->
   <div id="sidebar-wrapper">
-    <ul class="sidebar-nav">
+    <!--<ul class="sidebar-nav">
       <li class="sidebar-brand">
         <a href="#">Ailas</a>
       </li>
       <li>
         <a href="#"></a>
       </li>
-      <ul id="displayRoomName" class="list-group">
-        </ul>
-      <ul id="online-people" class="list-group">
-        </ul>
-
-    </ul>
+    </ul>-->
+    <div id="logo"></div>
+    <h4 class="text-success">Users online</h4>
+      <ul id="displayRoomName" class="list-group"> </ul>
+    <ul id="online-people" class="list-group"> </ul>
   </div>
   <!-- /#sidebar-wrapper -->
 
@@ -31,6 +30,7 @@
     <div class="container-fluid">
       <div class="row">
         <ul id="messages" class="list-group">
+        <!-- <li class="list-group-item bot-message"><span class="nickname">Ailas</span>Lorem ipsum <span class="ailas-word">**AILAS**</span>dolor sit.</li> -->
         </ul>
         <form action="">
           <div class="input-group">
@@ -92,8 +92,12 @@
           if (intendedRoom == room) {
             var recievedPerson = msg['person'];
             var txt = msg['txt'];
+            txt = txt.replace('\n', '<br>');
+            txt = txt.replace('**AILAS**', '<span class="ailas-word">**AILAS**</span>');
             var time = msg['timestamp'];
-            $('#messages').append($('<li class="list-group-item">').text(recievedPerson + ": " + txt + " - " + time));
+            $('#messages').append($('<li class="list-group-item ' 
+                + ((recievedPerson === "A.I.")? 'bot-message' : '') + '">')
+            .html('<span class="nickname">' + recievedPerson + "</span>" + ": " + txt + " - " + time));
             window.scrollTo(0,document.body.scrollHeight);
           }
         });
@@ -112,6 +116,8 @@
             }
           }
         });
+
+
 
       </script>
     </div>

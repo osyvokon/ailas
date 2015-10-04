@@ -52,7 +52,7 @@ class Synonyms:
 
 if __name__ == '__main__':
     s = Synonyms()
-    print(s.get_synonyms('щепа'))
+    print(s.get_synonyms('огида'))
     # for k,v in parse_synonyms().items():
     #     print(k)
     #     print('-')
