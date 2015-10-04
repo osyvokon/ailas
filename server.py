@@ -32,11 +32,12 @@ def get_hints(word, n=10):
     url = WORD_EMBEDDINGS_API + urllib.parse.quote(word)
     embeddings = [x[0] for x in requests.get(url).json()]
 
-    sentences_hints = list(c.find_token_sentences(word, n))
+    sentences_hints = list(c.find_token_sentences(word, n=n))
 
     hints = ([','.join(embeddings[:2])]  +
              sentences_hints[:3] +
              [','.join(embeddings[2:])] +
+             ['Перша літера: "{}"'.format(word[0])] +
              sentences_hints[3:])
 
     return hints
