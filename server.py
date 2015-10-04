@@ -147,6 +147,11 @@ def api_say(session_id):
         return jsonify({"hint": hint})
     elif msg.startswith('/restart'):
         return restart_session(session_id)
+    elif msg.startswith('/cheat'):
+        session = db.sessions.find_one({'id': session_id})
+        w = session.get('word', '')
+        return jsonify({"hint": "Пс-с-с-с.... Починається на {}, закінчується на {}..."
+                        .format(w[0], w[1:])})
     elif msg.startswith('/giveup'):
         session = db.sessions.find_one({'id': session_id})
         word = session['word']
