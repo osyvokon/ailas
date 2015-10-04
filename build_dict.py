@@ -137,7 +137,7 @@ class Corpora:
     def pick_word(self):
         # take 20 random words and choose whatever has more sentences
         vocab = list(self.index.keys())
-        cands = np.random.choice(vocab, size=20)
+        cands = np.random.choice(vocab, size=200)
         word = sorted(cands, key=lambda w: len(self.index[w]))[-1]
 
         # TODO: find the original word in sentences. for now we're 
@@ -153,7 +153,7 @@ class Corpora:
             s = self.sentences[sent_index]
             print(s)
             s_tokens = tokenize(s)
-            if len(s_tokens) == 1:
+            if len(s_tokens) < 3:
                 continue
 
             for x in s_tokens:
