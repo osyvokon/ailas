@@ -14,7 +14,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.write(str(data))
 
 application = tornado.web.Application([
-    (r"/.+", MainHandler),
+    (r"/([.]+)", MainHandler),
 ])
 
 if __name__ == "__main__":
