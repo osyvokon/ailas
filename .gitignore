@@ -65,3 +65,4 @@ target/
 .idea
 
 node_modules/
+text_model
