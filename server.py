@@ -76,8 +76,9 @@ def api_get_hint(session_id, extra_msg=None):
     db.sessions.update({'id': session_id},
                        {'$inc': {'current_hint_id': 1}})
 
+    hint = "Підказка №{}:  {}".format(current_hint_id  + 1, hint)
     if extra_msg:
-        hint = extra_msg + '\n' + str(hint)
+        hint = extra_msg + '\n' + hint
 
     return flask_jsonify({'hint': hint})
 
