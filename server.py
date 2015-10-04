@@ -18,13 +18,13 @@ c = Corpora()
 app = Flask(__name__)
 db = MongoClient().ailas
 
-def get_hints(word):
+def get_hints(word, n=10):
     """Return list of terms describing the word. """
 
     if not word:
         return []
 
-    return list(c.find_token_sentences(word))
+    return list(c.find_token_sentences(word, n))
 
 def guess_by_hints(hints):
 
@@ -37,17 +37,27 @@ def guess_by_hints(hints):
     print (candidates)
     return [c for c, _ in candidates.most_common(30)]
 
+def are_same_words(w1, w2):
+    # TODO: w2 already lemmatize. this should be fixed in pick_word first
+    return c.l.lemma(w1) == w2
+    #return c.l.lemma(w1) == c.l.lemma(w2)
+
 @app.route('/api/get_hint/<session_id>')
-def api_get_hint(session_id):
+def api_get_hint(session_id, extra_msg=None):
     # TODO: get hint by request
-    session = db.sessions.find({'id': session_id})
-    current_hint_id = session['current_hint_id'] + 1
+    session = db.sessions.find_one({'id': session_id})
+    current_hint_id = session['current_hint_id']
     try:
         hint = session['hints'][current_hint_id]
-    except Exception:
-        return flask_jsonify({'hint': 'Нажаль все використані всі можливі підказки.'})
-    db.sessions.update({'id', session_id},
-                       {'$set': {'current_hint_id': current_hint_id}})
+    except LookupError:
+        return flask_jsonify({'hint': 'На жаль, використані всі можливі підказки. '
+                                      'Моє слово було: {}'.format(session.get('word'))})
+    db.sessions.update({'id': session_id},
+                       {'$inc': {'current_hint_id': 1}})
+
+    if extra_msg:
+        hint = extra_msg + '\n' + hint
+
     return flask_jsonify({'hint': hint})
 
 @app.route('/api/session', methods=['GET'])
@@ -61,17 +71,25 @@ def api_session_start():
     # TODO: create word, addrs, hints, current_hint_id fields in sessions
     # TODO: generate hints list
     session_id = request.json['id']
-    callback = request.json['callback']
+    callback = request.json.get('callback')
+    return restart_session(session_id, callback)
+
+def restart_session(session_id, callback=None, extra_msg=''):
+    word = c.pick_word()
+    hints = get_hints(word, n=50)
     session = {
         'id': session_id,
         'callback': callback,
-        'active': True
+        'active': True,
+        'word': word,
+        'hints': hints,
+        'current_hint_id': 0,
     }
     db.sessions.update({'id': session_id},
                        {'$set': session},
                        upsert=True)
+    return api_get_hint(session_id, extra_msg + '\n' + "GAME RESTARTED")
 
-    return jsonify(session)
 
 
 @app.route('/api/session/<session_id>/say', methods=['POST', 'PUT'])
@@ -81,12 +99,6 @@ def api_say(session_id):
 
     print(msg, '-------')
 
-    if msg.startswith("/guess "):
-        msg = msg.partition(' ')[2]
-        hint = guess_by_hints(msg.split())
-    else:
-        hint = random.choice(get_hints(msg) or ['(dunno)'])
-
     db.messages.insert({
         "sessionId": session_id,
         "user": user,
@@ -94,7 +106,33 @@ def api_say(session_id):
         "dt": datetime.datetime.now()
     })
 
-    return jsonify({"hint": hint})
+    if msg.startswith("/guess "):
+        msg = msg.partition(' ')[2]
+        hint = guess_by_hints(msg.split())
+    elif msg.startswith('/describe '):
+        msg = msg.partition(' ')[2]
+        hint = random.choice(get_hints(msg) or ['(dunno)'])
+        return jsonify({"hint": hint})
+    elif msg.startswith('/restart'):
+        return restart_session(session_id)
+    elif msg.startswith('/giveup'):
+        session = db.sessions.find_one({'id': session_id})
+        word = session['word']
+        msg = 'Моє слово було {}'.format(word)
+        return restart_session(session_id, extra_msg=msg)
+
+    else:
+        # Human's guess
+        session = db.sessions.find_one({'id': session_id})
+        if not session or not session.get('word'):
+            return jsonify({"hint": "Something went wrong. Please /restart session"})
+
+        if are_same_words(msg, session.get('word')):
+            return jsonify({"hint": "We've got THE WINNER! My word is {}".format(session['word']),
+                            "win": True})
+        else:
+            return api_get_hint(session_id)
+
 
 @app.route('/api/session/<session_id>', methods=['DELETE'])
 def api_session_delete(session_id):

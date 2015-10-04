@@ -17,6 +17,11 @@ app.get('/main.css', function(req,res){
 });
 
 io.on('connection', function(socket){
+  io.emit('chat message', {
+    person: 'bot',
+    txt: 'Known commands: \guess hints'
+  });
+
   socket.on('chat message', function(msg){
     //var time = moment().format('MMMM Do YYYY, h:mm:ss a');
     var time = moment().format('h:mm:ss a');
