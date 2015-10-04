@@ -3,8 +3,13 @@
   margin-right: 10px;
 }
 
-#messages .bot-message {
+#messages span.nickname {
     font-weight: bold;
+}
+
+.bot-message span.ailas-word {
+    font-weight: bold;
+    color: green;
 }
 
 .time {

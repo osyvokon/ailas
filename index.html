@@ -30,6 +30,7 @@
     <div class="container-fluid">
       <div class="row">
         <ul id="messages" class="list-group">
+        <!-- <li class="list-group-item bot-message"><span class="nickname">Ailas</span>Lorem ipsum <span class="ailas-word">**AILAS**</span>dolor sit.</li> -->
         </ul>
         <form action="">
           <div class="input-group">
@@ -80,10 +81,12 @@
         socket.on('chat message', function(msg){
           var recievedPerson = msg['person'];
           var txt = msg['txt'];
+          txt.replace('\n', '<br>');
+          txt.replace('**AILAS**', '<span class="ailas-word">**AILAS**</span>');
           var time = msg['timestamp'];
           $('#messages').append($('<li class="list-group-item ' 
             + ((recievedPerson === "A.I.")? 'bot-message' : '') + '">')
-          .text(recievedPerson + ": " + txt + " - " + time));
+          .text('<span class="nickname">' + recievedPerson + "</span>" + ": " + txt + " - " + time));
           window.scrollTo(0,document.body.scrollHeight);
         });
 
@@ -97,6 +100,8 @@
             $('#online-people').append($('<li class="list-group-item">').text(namelist[i]));
           }
         });
+
+
 
       </script>
     </div>
