@@ -12,6 +12,10 @@ app.get('/', function(req,res){
 	res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/main.css', function(req,res){
+	res.sendFile(__dirname + '/main.css');
+});
+
 io.on('connection', function(socket){
   socket.on('chat message', function(msg){
     //var time = moment().format('MMMM Do YYYY, h:mm:ss a');
