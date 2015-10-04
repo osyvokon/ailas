@@ -3,6 +3,10 @@
   margin-right: 10px;
 }
 
+#messages .bot-message {
+    font-weight: bold;
+}
+
 .time {
   color: grey;
   font-size: 11px;
