@@ -3,16 +3,19 @@ var http = require('http').Server(app);
 var request = require('request');
 var io = require('socket.io')(http);
 var moment = require('moment');
+var roomDict = {};
 var people = {};
 
 //var API_URL = 'http://40.115.53.131:5000/api';
 var API_URL = 'http://localhost:5000/api';
 
-var computeNamelist = function() {
+var computeNamelist = function(intendedRoom) {
 	var namelist = [];
 	for (var socketIdKey in people) {
 	  if (people.hasOwnProperty(socketIdKey)) {
-	    namelist.push(people[socketIdKey].name);
+	  	if (intendedRoom == people[socketIdKey].room) {
+	  		namelist.push(people[socketIdKey].name);
+	  	}
 	  }
 	}
 	return namelist
@@ -20,7 +23,21 @@ var computeNamelist = function() {
 
 
 app.get('/', function(req,res){
+	console.log(req);
 	res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/rooms', function(req,res){
+	var room_id = req.param('id');
+	res.set('room_id', room_id)
+	res.sendFile(__dirname + '/index.html');
+	var messageToClients = {
+    	'person': 'bot',
+    	'txt': 'room_id is: ' + room_id,
+    	'timestamp': '',
+    	'room': room_id
+	}
+    io.emit('chat message', messageToClients);
 });
 
 app.get('/main.css', function(req,res){
@@ -28,10 +45,6 @@ app.get('/main.css', function(req,res){
 });
 
 io.on('connection', function(socket){
-  io.emit('chat message', {
-    person: 'bot',
-    txt: 'Known commands: \guess hints'
-  });
 
   // NODE SERVER GETS A CHAT MESSAGE
   // -------------------------------
@@ -42,7 +55,8 @@ io.on('connection', function(socket){
     var messageToClients = {
     	'person': msg['person'],
     	'txt': msg['txt'],
-    	'timestamp': time
+    	'timestamp': time,
+    	'room': msg['room']
 	}
 	console.log(messageToClients);
     io.emit('chat message', messageToClients);
@@ -52,7 +66,8 @@ io.on('connection', function(socket){
         io.emit('chat message', {
           'person': 'bot',
           'txt': body && body.hint,
-          'timestamp': moment().format('h:mm:ss a')
+          'timestamp': moment().format('h:mm:ss a'),
+          'room': msg['room']
         });
       });
   });
@@ -62,10 +77,17 @@ io.on('connection', function(socket){
   socket.on('join message', function(msg){
  	// Add user to dict
   	people[socket.id] = { 
-  		'name': msg['person'] 
+  		'name': msg['person'], 
+  		'room': msg['room']
   	}
-  	var namelist = computeNamelist();
-  	io.emit('join ack message', namelist);
+  	var namelist = computeNamelist(msg['room']);
+  	var messageToClients = {
+    	'namelist': namelist,
+    	'txt': msg['txt'],
+    	'timestamp': '',
+    	'room': msg['room']
+	}
+  	io.emit('join ack message', messageToClients);
 
     // request.get(API_URL + '/session/test/scores',
     //   function (error, response, body) {
@@ -80,10 +102,17 @@ io.on('connection', function(socket){
 		if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
 			console.log('disconnect: ' + people[socket.id].name);
 			// Remove from people dict
+			var temproom = people[socket.id].room;
 			delete people[socket.id];
 			//send new message to update clients
-			var namelist = computeNamelist();
-  			io.emit('join ack message', namelist);
+			var namelist = computeNamelist(temproom);
+		  	var messageToClients = {
+		    	'namelist': namelist,
+		    	'txt': '',
+		    	'timestamp': '',
+		    	'room': temproom
+			}
+  			io.emit('join ack message', messageToClients);
 		}
 	});
 });

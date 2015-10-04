@@ -17,6 +17,8 @@
       <li>
         <a href="#"></a>
       </li>
+      <ul id="displayRoomName" class="list-group">
+        </ul>
       <ul id="online-people" class="list-group">
         </ul>
 
@@ -49,12 +51,20 @@
       <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
       <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
       <script>
+        // Get current room requested by user
+        var query = window.location.search.substring(1);
+        var room = query.split("=")[1];
+        console.log('Room is: ' + room);
+        $('#displayRoomName').append($('<li class="sidebar-brand">').text('Current Room: '+room));
+
+
         var socket = io();
         var person = prompt("Please enter a nickname", "Your name");
         if (person != null) {
             var messageToServer = {
               'person': person,
-              'txt': "just joined the chat"
+              'txt': "just joined the chat room named " + room,
+              'room': room
             }
             socket.emit('chat message', messageToServer);
             $('#m').focus();
@@ -65,7 +75,8 @@
 
           var messageToServer = {
             'person': person,
-            'txt': $('#m').val()
+            'txt': $('#m').val(),
+            'room': room
           }
 
           socket.emit('chat message', messageToServer);
@@ -77,21 +88,28 @@
         // CLIENT RECEIVES CHAT MESSAGE
         // ----------------------------
         socket.on('chat message', function(msg){
-          var recievedPerson = msg['person'];
-          var txt = msg['txt'];
-          var time = msg['timestamp'];
-          $('#messages').append($('<li class="list-group-item">').text(recievedPerson + ": " + txt + " - " + time));
-          window.scrollTo(0,document.body.scrollHeight);
+          var intendedRoom = msg['room'];
+          if (intendedRoom == room) {
+            var recievedPerson = msg['person'];
+            var txt = msg['txt'];
+            var time = msg['timestamp'];
+            $('#messages').append($('<li class="list-group-item">').text(recievedPerson + ": " + txt + " - " + time));
+            window.scrollTo(0,document.body.scrollHeight);
+          }
         });
 
         // CLIENT RECEIVES JOIN ACK MESSAGE
         // --------------------------------
-        socket.on('join ack message', function(namelist){
-          console.log(namelist);
-          var arrayLength = namelist.length;
-          $('#online-people').html('');
-          for (var i = 0; i < arrayLength; i++) {
-            $('#online-people').append($('<li class="list-group-item">').text(namelist[i]));
+        socket.on('join ack message', function(msg){
+          var intendedRoom = msg['room'];
+          if (intendedRoom == room) {
+            var namelist = msg['namelist'];
+            console.log(namelist);
+            var arrayLength = namelist.length;
+            $('#online-people').html('');
+            for (var i = 0; i < arrayLength; i++) {
+              $('#online-people').append($('<li class="list-group-item">').text(namelist[i]));
+            }
           }
         });
 
