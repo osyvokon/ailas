@@ -1,16 +1,21 @@
 #!/usr/bin/env python2
 
-from flask import Flask
+import tornado.ioloop
+import tornado.web
 import json
-import w2v_associations as associations
+from w2v_associations import W2V
 
-app = Flask(__name__)
-model = associations.W2V()
+analyzer = W2v()
 
 
-@app.route(r'/<word>', methods=['GET'])
-def analyze(word):
-    return json.dumps(model.get_similair(word))
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("Hello, world")
 
-if __name__ == '__main__':
-    app.run()
+application = tornado.web.Application([
+    (r"/", MainHandler),
+])
+
+if __name__ == "__main__":
+    application.listen(8888, address='0.0.0.0')
+    tornado.ioloop.IOLoop.instance().start()
