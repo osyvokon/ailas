@@ -25,6 +25,15 @@ synonyms = Synonyms()
 app = Flask(__name__)
 db = MongoClient().ailas
 
+
+def remove_empty(l):
+    if not l:
+        return []
+    if len(l) == 1 and not l[0]:
+        return []
+    return l
+
+
 def get_hints(word, n=10):
     """Return list of terms describing the word. """
 
@@ -37,10 +46,10 @@ def get_hints(word, n=10):
     sentences_hints = list(c.find_token_sentences(word, n=n))
     synonym_hints = synonyms.get_synonyms(word)
 
-    hints = ([', '.join(embeddings[:2])] +
+    hints = (remove_empty([', '.join(embeddings[:2])]) +
              sentences_hints[:3] +
-             [', '.join(synonym_hints)] +
-             [', '.join(embeddings[2:])] +
+             remove_empty([', '.join(synonym_hints)]) +
+             remove_empty([', '.join(embeddings[2:])]) +
              ['Перша літера: "{}"'.format(word[0])] +
              sentences_hints[3:])
 
