@@ -86,7 +86,7 @@
           var time = msg['timestamp'];
           $('#messages').append($('<li class="list-group-item ' 
             + ((recievedPerson === "A.I.")? 'bot-message' : '') + '">')
-          .text('<span class="nickname">' + recievedPerson + "</span>" + ": " + txt + " - " + time));
+          .html('<span class="nickname">' + recievedPerson + "</span>" + ": " + txt + " - " + time));
           window.scrollTo(0,document.body.scrollHeight);
         });
 
