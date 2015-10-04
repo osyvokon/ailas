@@ -9,11 +9,12 @@ analyzer = W2v()
 
 
 class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.write("Hello, world")
+    def get(self, word):
+        data = analyzer.get_similair(word)
+        self.write(str(data))
 
 application = tornado.web.Application([
-    (r"/", MainHandler),
+    (r"/*", MainHandler),
 ])
 
 if __name__ == "__main__":
