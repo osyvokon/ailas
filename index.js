@@ -4,7 +4,8 @@ var request = require('request');
 var io = require('socket.io')(http);
 var moment = require('moment');
 
-var API_URL = 'http://40.115.53.131:5000/api';
+//var API_URL = 'http://40.115.53.131:5000/api';
+var API_URL = 'http://localhost:5000/api';
 
 
 app.get('/', function(req,res){
