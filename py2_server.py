@@ -2,7 +2,6 @@
 
 import tornado.ioloop
 import tornado.web
-import json
 from w2v_associations import W2V
 
 analyzer = W2V()
@@ -14,7 +13,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.write(str(data))
 
 application = tornado.web.Application([
-    (r"/([.]+)", MainHandler),
+    (r"/(.+)", MainHandler),
 ])
 
 if __name__ == "__main__":
