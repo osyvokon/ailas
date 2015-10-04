@@ -1,4 +1,5 @@
 all: corpora/warpeace.txt node
+	killall node
 	node index.js &
 	./server.py
 	kill %1

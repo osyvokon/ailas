@@ -5,7 +5,7 @@ from gensim.models import Word2Vec
 
 
 class W2V(object):
-    def __init__(self, model_filename='text_model_100'):
+    def __init__(self, model_filename='text_model_300'):
         self.model = Word2Vec.load(model_filename)
 
     def get_similair(self, word):

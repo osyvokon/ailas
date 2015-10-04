@@ -158,10 +158,10 @@ class Corpora:
 
             for x in s_tokens:
                 if self.l.lemma(x) == t:
-                    s = s.replace(x, "**ALIAS**")
+                    s = s.replace(x, "**AILAS**")
 
             if shorten:
-                s = '\n'.join(re.findall(r"[\w ]*\*\*ALIAS\*\*[\w ]*", s)).strip()
+                s = '\n'.join(re.findall(r"[\w ]*\*\*AILAS\*\*[\w ]*", s)).strip()
 
             results.append(s)
 
