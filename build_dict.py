@@ -4,7 +4,7 @@ import glob
 import gensim
 import pickle
 import numpy as np
-from collections import defaultdict
+from collections import defaultdict, Counter
 from ukr_stemmer import UkrainianStemmer
 
 
@@ -185,14 +185,16 @@ class Corpora:
 
         return [x[1] for x in sorted(result, reverse=True)]
 
-    def get_candidates(self, word):
+    def guess_candidates(self, word):
         token = self.l.lemma(word)
         candidates = Counter()
         stopwords = load_stopwords()
-        for sent_index in self.index.get(t, []):
-            orig_sent = self.sentences[sent_index]
-            lemm_sent = [self.l.lemma(t) for t in tokenize(orig_sent)]
+        for sent_index in self.index.get(token, []):
+            orig_sent = tokenize(self.sentences[sent_index])
+            lemm_sent = [self.l.lemma(t) for t in orig_sent]
             i = lemm_sent.index(token)
-            cs = [c for c in orig_sent[i-2:i+2] if not c in stopwords]
+
+            cs = [self.l.lemma(c) for c in orig_sent[i-2:i] + orig_sent[i+1:i+3]]
+            cs = [c for c in cs if c not in stopwords]
             candidates.update(cs)
         return candidates

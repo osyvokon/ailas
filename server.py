@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import datetime
 import random
+from collections import Counter
 from flask import Flask, request, jsonify as flask_jsonify
 from pymongo import MongoClient
 
@@ -24,6 +25,17 @@ def get_hints(word):
         return []
 
     return list(c.find_token_sentences(word))
+
+def guess_by_hints(hints):
+
+    candidates = Counter()
+    for hint in hints:
+        candidates.update(c.guess_candidates(hint))
+
+    for h in hints:
+        candidates[c.l.lemma(h)] = 0
+    print (candidates)
+    return [c for c, _ in candidates.most_common(30)]
 
 @app.route('/api/get_hint/<session_id>')
 def api_get_hint(session_id):
@@ -68,7 +80,12 @@ def api_say(session_id):
     user = request.json['person']
 
     print(msg, '-------')
-    hint = random.choice(get_hints(msg) or ['(dunno)'])
+
+    if msg.startswith("/guess "):
+        msg = msg.partition(' ')[2]
+        hint = guess_by_hints(msg.split())
+    else:
+        hint = random.choice(get_hints(msg) or ['(dunno)'])
 
     db.messages.insert({
         "sessionId": session_id,
