@@ -55,6 +55,7 @@
               'txt': "just joined the chat"
             }
             socket.emit('chat message', messageToServer);
+            $('#m').focus();
         }
 
         $('form').submit(function(){
@@ -66,6 +67,7 @@
 
           socket.emit('chat message', messageToServer);
           $('#m').val('');
+          $('#m').focus();
           return false;
         });
         socket.on('chat message', function(msg){
