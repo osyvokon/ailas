@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 import itertools
 from gensim.models import Word2Vec
 
@@ -49,11 +50,27 @@ class W2V(object):
 
         return total
 
+    def get_similair_some(self, positive=[], negative=[]):
+        return self.model.most_similar(positive=positive, negative=negative)
+
+    def get_strange_similarity(self, word):
+        similarities = self.get_similarity_bunch(word)
+        negs = [random.choice(self.model.vocab.keys()) for _ in xrange(len(similarities))]
+
+        return self.get_similair_some(positive=similarities, negative=negs)
+
+    def guess_word(self, word_list):
+        return self.get_similair_some(positive=word_list)
+
 
 if __name__ == '__main__':
-    w = W2V()
-    for i in w.get_similarity_bunch('тато'.decode('utf-8')):
-        print i
-    print '****'
-    for i in w.get_similair('тато'.decode('utf-8')):
+    w = W2V(model_filename='../wiki/text_model_100')
+    # ss = w.get_strange_similarity('хлопчик'.decode('utf-8'))
+    ss = w.guess_word([i.decode('utf-8') for i in 'молодий чоловік'.split()])
+    for i in ss:
         print i[0]
+    # for i in w.get_similarity_bunch('тато'.decode('utf-8')):
+    #     print i
+    # print '****'
+    # for i in w.get_similair('тато'.decode('utf-8')):
+    #     print i[0]
