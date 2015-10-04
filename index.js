@@ -17,6 +17,7 @@ app.get('/main.css', function(req,res){
 });
 
 io.on('connection', function(socket){
+  window.scrollTo(0,document.body.scrollHeight);
   socket.on('chat message', function(msg){
     //var time = moment().format('MMMM Do YYYY, h:mm:ss a');
     var time = moment().format('h:mm:ss a');
