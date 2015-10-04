@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 import datetime
 import random
+import urllib
+import requests
 from collections import Counter
 from flask import Flask, request, jsonify as flask_jsonify
 from pymongo import MongoClient
+
+
+WORD_EMBEDDINGS_API = 'http://localhost:8888/'
 
 
 def jsonify(obj):
@@ -24,7 +29,17 @@ def get_hints(word, n=10):
     if not word:
         return []
 
-    return list(c.find_token_sentences(word, n))
+    url = WORD_EMBEDDINGS_API + urllib.parse.quote(word)
+    embeddings = [x[0] for x in requests.get(url).json()]
+
+    sentences_hints = list(c.find_token_sentences(word, n))
+
+    hints = ([','.join(embeddings[:2])]  +
+             sentences_hints[:3] +
+             [','.join(embeddings[2:])] +
+             sentences_hints[3:])
+
+    return hints
 
 def guess_by_hints(hints):
 
@@ -56,7 +71,7 @@ def api_get_hint(session_id, extra_msg=None):
                        {'$inc': {'current_hint_id': 1}})
 
     if extra_msg:
-        hint = extra_msg + '\n' + hint
+        hint = extra_msg + '\n' + str(hint)
 
     return flask_jsonify({'hint': hint})
 
