@@ -22,6 +22,7 @@
     <h4 class="text-success">Users online</h4>
       <ul id="displayRoomName" class="list-group"> </ul>
     <ul id="online-people" class="list-group"> </ul>
+    <button cls="btn btn-primary" id="btnJoinRoom">Join room</button>
   </div>
   <!-- /#sidebar-wrapper -->
 
@@ -83,6 +84,14 @@
           $('#m').val('');
           $('#m').focus();
           return false;
+        });
+
+
+        $("#btnJoinRoom").click(function() {
+          var room = prompt("Enter a room name");
+          if (room) {
+            window.location = "http://localhost:3001/rooms?id=" + room;
+          }
         });
 
         // CLIENT RECEIVES CHAT MESSAGE
