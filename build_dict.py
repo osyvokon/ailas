@@ -85,7 +85,7 @@ class Corpora:
         else:
             loaded_size = 0
             files = glob.glob("./corpora/*/*")
-            np.random.seed(42)
+            # np.random.seed(42)
             np.random.shuffle(files)
             for i, f in enumerate(files):
                 if os.path.isfile(f):
@@ -138,7 +138,7 @@ class Corpora:
     def pick_word(self):
         # take 20 random words and choose whatever has more sentences
         vocab = list(self.index.keys())
-        np.random.seed(42)
+        # np.random.seed(42)
         cands = np.random.choice(vocab, size=200)
         word = sorted(cands, key=lambda w: len(self.index[w]))[-1]
 
