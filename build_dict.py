@@ -84,7 +84,7 @@ class Corpora:
             self.sentences = pickle.load(open('./cache/sentences', 'rb'))
         else:
             loaded_size = 0
-            files = glob.glob("./corpora/Text/*/*")
+            files = glob.glob("./corpora/*/*")
             np.random.seed(42)
             np.random.shuffle(files)
             for i, f in enumerate(files):
@@ -151,12 +151,13 @@ class Corpora:
         t =  self.l.lemma(token)
         results = []
         indexes = self.index.get(t, [])
+        stopwords = load_stopwords()
         np.random.shuffle(indexes)
         for sent_index in indexes:
             s = self.sentences[sent_index]
             print(s)
             s_tokens = tokenize(s)
-            if len(s_tokens) < 3:
+            if len([x for x in s_tokens if x not in stopwords]) < 3:
                 continue
 
             for x in s_tokens:
