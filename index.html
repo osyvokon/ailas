@@ -17,6 +17,8 @@
       <li>
         <a href="#"></a>
       </li>
+      <ul id="online-people" class="list-group">
+        </ul>
 
     </ul>
   </div>
@@ -56,6 +58,7 @@
             }
             socket.emit('chat message', messageToServer);
             $('#m').focus();
+            socket.emit('join message', messageToServer);
         }
 
         $('form').submit(function(){
@@ -70,13 +73,28 @@
           $('#m').focus();
           return false;
         });
+
+        // CLIENT RECEIVES CHAT MESSAGE
+        // ----------------------------
         socket.on('chat message', function(msg){
-          var recievedPerson = msg['person']
+          var recievedPerson = msg['person'];
           var txt = msg['txt'];
-          var time = msg['timestamp']
+          var time = msg['timestamp'];
           $('#messages').append($('<li class="list-group-item">').text(recievedPerson + ": " + txt + " - " + time));
           window.scrollTo(0,document.body.scrollHeight);
         });
+
+        // CLIENT RECEIVES JOIN ACK MESSAGE
+        // --------------------------------
+        socket.on('join ack message', function(namelist){
+          console.log(namelist);
+          var arrayLength = namelist.length;
+          $('#online-people').html('');
+          for (var i = 0; i < arrayLength; i++) {
+            $('#online-people').append($('<li class="list-group-item">').text(namelist[i]));
+          }
+        });
+
       </script>
     </div>
   </body>
