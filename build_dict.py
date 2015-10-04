@@ -3,6 +3,7 @@ import os
 import glob
 import gensim
 import pickle
+import numpy as np
 from collections import defaultdict
 from ukr_stemmer import UkrainianStemmer
 
@@ -111,9 +112,13 @@ class Corpora:
         print(list(self.bigrams.vocab.items())[:100])
         return phrases
 
-    def find_token_sentences(self, token, shorten=True):
-        for sent_index in self.index.get(self.l.lemma(token), []):
+    def find_token_sentences(self, token, shorten=True, n=10):
+        results = []
+        indexes = self.index.get(self.l.lemma(token), [])
+        np.random.shuffle(indexes)
+        for sent_index in indexes:
             s = self.sentences[sent_index]
+            print(s)
             for t in tokenize(s):
                 if self.l.lemma(t) == token:
                     s = s.replace(t, "**ALIAS**")
@@ -121,7 +126,12 @@ class Corpora:
             if shorten:
                 s = '\n'.join(re.findall(r"[\w ]*\*\*ALIAS\*\*[\w ]*", s)).strip()
 
-            yield s
+            results.append(s)
+
+            if len(s) >= n:
+                break
+
+        return results
 
     def find_token_pharses(self, token):
         result = list()
