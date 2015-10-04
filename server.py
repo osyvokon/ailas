@@ -105,8 +105,8 @@ def api_session_start():
     callback = request.json.get('callback')
     return restart_session(session_id, callback)
 
-def restart_session(session_id, callback=None, extra_msg=''):
-    word = c.pick_word()
+def restart_session(session_id, callback=None, extra_msg='', best=False):
+    word = c.pick_word(best=best)
     hints = get_hints(word, n=50)
     session = {
         'id': session_id,
@@ -156,6 +156,8 @@ def api_say(session_id):
         msg = msg.partition(' ')[2]
         hint = random.choice(get_hints(msg) or ['(dunno)'])
         return jsonify({"hint": hint})
+    elif msg == '/restart ':
+        return restart_session(session_id, best=True)
     elif msg.startswith('/restart'):
         return restart_session(session_id)
     elif msg.startswith('/cheat'):
