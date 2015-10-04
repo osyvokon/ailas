@@ -5,7 +5,7 @@ import tornado.web
 import json
 from w2v_associations import W2V
 
-analyzer = W2v()
+analyzer = W2V()
 
 
 class MainHandler(tornado.web.RequestHandler):
