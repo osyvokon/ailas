@@ -2,6 +2,7 @@
 
 import tornado.ioloop
 import tornado.web
+import json
 from w2v_associations import W2V
 
 analyzer = W2V()
@@ -10,7 +11,7 @@ analyzer = W2V()
 class MainHandler(tornado.web.RequestHandler):
     def get(self, word):
         data = analyzer.get_similair(word)
-        self.write(str(data))
+        self.write(json.dumps(data))
 
 application = tornado.web.Application([
     (r"/(.+)", MainHandler),
