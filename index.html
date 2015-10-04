@@ -81,8 +81,8 @@
         socket.on('chat message', function(msg){
           var recievedPerson = msg['person'];
           var txt = msg['txt'];
-          txt.replace('\n', '<br>');
-          txt.replace('**AILAS**', '<span class="ailas-word">**AILAS**</span>');
+          txt = txt.replace('\n', '<br>');
+          txt = txt.replace('**AILAS**', '<span class="ailas-word">**AILAS**</span>');
           var time = msg['timestamp'];
           $('#messages').append($('<li class="list-group-item ' 
             + ((recievedPerson === "A.I.")? 'bot-message' : '') + '">')
