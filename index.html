@@ -2,47 +2,47 @@
 <html>
   <head>
     <title>Ailas chat</title>
-    <style>
-      * { 
-        margin: 0; 
-        padding: 0; 
-        box-sizing: 
-        border-box; }
-      html,body { 
-        height: 100%; 
-        margin: 0px; 
-        padding: 0px; }
-      body { font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-      font-weight: 300;}
-      form { background: #000;
-        padding: 3px;
-        position: fixed; 
-        bottom: 0; 
-        width: inherit; 
-      }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding-bottom: 45px;}
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-      #left-container { width: 20%; height: 100%; position:fixed; bottom:0; float: left; margin: 0 auto; background: #292935;}
-      #right-container { width: 80%; height: 100%; float: right; background-color: white;}
-      #title { color: white; width: 50%; margin: 0 auto; padding-top: 10px;}
-    </style>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
   </head>
   <body>
-    <div id="left-container">
-      <div id="title">
-        <img src="https://gumroad.com/button/button_logo.png" alt="icon" style="width:20px;height:20px;">
-        AiLas
-      </div>
-    </div>
-    <div id="right-container">
-      <ul id="messages">
-      </ul>
-      <form action="">
-        <input id="m" autocomplete="off" /><button>Send</button>
-      </form>
+    <div id="wrapper">
+
+  <!-- Sidebar -->
+  <div id="sidebar-wrapper">
+    <ul class="sidebar-nav">
+      <li class="sidebar-brand">
+        <a href="#">Ailas</a>
+      </li>
+      <li>
+        <a href="#"></a>
+      </li>
+
+    </ul>
+  </div>
+  <!-- /#sidebar-wrapper -->
+
+  <!-- Page Content -->
+  <div id="page-content-wrapper">
+    <div class="container-fluid">
+      <div class="row">
+        <ul id="messages" class="list-group">
+        </ul>
+        <form action="">
+          <div class="input-group">
+            <input class="form-control" id="m" autocomplete="off" />
+            <span class="input-group-btn">
+            <button class="btn btn-primary">Send</button>
+          </span>
+          </div>
+        </form>
+        </div>
+        </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+        </div>
+        <!-- /#wrapper -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
       <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
       <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
