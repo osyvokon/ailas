@@ -28,7 +28,11 @@ io.on('connection', function(socket){
       function (error, response, body) { 
         io.emit('chat message', {
           'person': 'bot',
+<<<<<<< HEAD
           'txt': body && body.hint ,
+=======
+          'txt': body && body.hint,
+>>>>>>> e87df440f13644638de70e51f2cd7f2f3b99bc25
           'timestamp': moment().format('h:mm:ss a')
         });
       });
