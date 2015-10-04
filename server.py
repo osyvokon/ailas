@@ -18,8 +18,10 @@ def jsonify(obj):
 
 
 from build_dict import Corpora
+from synonyms import Synonyms
 
 c = Corpora()
+synonyms = Synonyms()
 app = Flask(__name__)
 db = MongoClient().ailas
 
@@ -33,10 +35,12 @@ def get_hints(word, n=10):
     embeddings = [x[0] for x in requests.get(url).json()]
 
     sentences_hints = list(c.find_token_sentences(word, n=n))
+    synonym_hints = synonyms.get_synonyms(word)
 
-    hints = ([','.join(embeddings[:2])]  +
+    hints = ([', '.join(embeddings[:2])] +
              sentences_hints[:3] +
-             [','.join(embeddings[2:])] +
+             [', '.join(synonym_hints)] +
+             [', '.join(embeddings[2:])] +
              ['Перша літера: "{}"'.format(word[0])] +
              sentences_hints[3:])
 
