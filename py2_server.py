@@ -10,11 +10,11 @@ analyzer = W2V()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, word):
-        try:
+	print('JOKE')
+	try:
             data = analyzer.get_similair(word)
-        except KeyError as e:
-            print(e)
-            data = []
+	except Exception:
+	    data = []
         self.set_header('Content-Type', 'application/json')
         self.write(json.dumps(data))
 
