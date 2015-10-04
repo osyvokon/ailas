@@ -4,7 +4,7 @@ var request = require('request');
 var io = require('socket.io')(http);
 var moment = require('moment');
 
-var API_URL = 'http://localhost:5000/api';
+var API_URL = 'http://40.115.53.131:5000/api';
 
 
 app.get('/', function(req,res){
@@ -28,7 +28,7 @@ io.on('connection', function(socket){
       function (error, response, body) { 
         io.emit('chat message', {
           'person': 'bot',
-          'txt': body.hint,
+          'txt': body && body.hint,
           'timestamp': moment().format('h:mm:ss a')
         });
       });

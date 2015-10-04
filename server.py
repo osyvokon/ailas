@@ -64,9 +64,10 @@ def api_session_start():
 
 @app.route('/api/session/<session_id>/say', methods=['POST', 'PUT'])
 def api_say(session_id):
-    msg = request.json['txt']
+    msg = request.json['txt'].lower()
     user = request.json['person']
 
+    print(msg, '-------')
     hint = random.choice(get_hints(msg) or ['(dunno)'])
 
     db.messages.insert({
@@ -87,7 +88,7 @@ def api_session_delete(session_id):
 @app.route('/')
 def form():
     query = request.args.get('query')
-    associations = get_associations(query)
+    associations = get_hints(query)
 
     return """
 <html>
