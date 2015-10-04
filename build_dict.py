@@ -49,7 +49,14 @@ def test_stopwords():
     assert 'червоний' not in load_stopwords()
 
 def split_sentences(s):
-    return re.split('[.!?]\n', s)
+    return [s.strip() for s in re.split('[.!?\n]', s)]
+
+def test_split_sentences():
+    assert split_sentences("Hello, world! How. Are? You") == [
+        "Hello, world",
+        "How",
+        "Are",
+        "You"]
 
 def tokenize(s):
     return re.findall("\w+", s)
@@ -60,7 +67,7 @@ def test_tokenize_simple():
 
 
 class Corpora:
-    def __init__(self):
+    def __init__(self, find_phrases=False):
         self.index = defaultdict(list)     # token => sentence indexes
         l = self.l = Lemmatizer()
         self.bigrams = gensim.models.Phrases()
@@ -79,12 +86,12 @@ class Corpora:
                     if loaded_size > MAX_CORPUS_SIZE:
                         break
                     print("loading", f)
-                    self._add_document(f)
+                    self._add_document(f, find_phrases)
             pickle.dump(self.index, open("./cache/index", "wb"))
             pickle.dump(self.sentences, open("./cache/sentences", "wb"))
             print("Corpora loaded")
 
-    def _add_document(self, filename):
+    def _add_document(self, filename, find_phrases=False):
         stopwords = load_stopwords()
         with open(filename) as f:
             sentences = split_sentences(f.read().lower())
@@ -94,14 +101,16 @@ class Corpora:
                 for t in tokens:
                     if len(self.index[t]) < MAX_SENTENCES_PER_WORD:
                         self.index[t].append(sentence_index)
-                sentences_tokenized.append(tokens)
+                if find_phrases:
+                    sentences_tokenized.append(tokens)
 
         #bigrams = gensim.models.Phrases(sentences_tokenized)
         #phrases = [s.decode() for s in bigrams.vocab.keys()
                         #if b'_' in s]
         #self.phrases += phrases
         self.sentences += sentences
-        self.bigrams.add_vocab(sentences_tokenized)
+        if find_phrases:
+            self.bigrams.add_vocab(sentences_tokenized)
 
         #print("{}: {} sentences, {} phrases".format(filename, len(sentences), len(phrases)))
 
