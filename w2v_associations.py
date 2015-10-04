@@ -3,9 +3,8 @@ from gensim.models import Word2Vec
 
 class W2V:
     def __init__(self):
-        self.model = Word2Vec.load('text_model')
+        self.model = Word2Vec.load('text_model_100')
 
     def get_similair(self, word):
-        wu = word.decode('utf-8')
-        q = self.model.most_similar(wu)
+        q = self.model.most_similar(word)
         return q

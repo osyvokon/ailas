@@ -5,7 +5,7 @@ import asyncio
 
 db = MongoClient().ailas
 
-MASTER_SERVER_URL = ''
+MASTER_SERVER_URL = '40.115.53.131/api/get_hint/'
 
 
 @asyncio.coroutine
