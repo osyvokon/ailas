@@ -21,6 +21,7 @@
     <div id="logo"></div>
     <h4 class="text-success">Users online</h4>
     <ul id="online-people" class="list-group">
+      <li class="list-group-item"><img class="img-circle img-thumbnail" src="img/logo.png" alt="" />Lorem ipsum.</li>
     </ul>
   </div>
   <!-- /#sidebar-wrapper -->
@@ -30,7 +31,7 @@
     <div class="container-fluid">
       <div class="row">
         <ul id="messages" class="list-group">
-        <!-- <li class="list-group-item bot-message"><span class="nickname">Ailas</span>Lorem ipsum <span class="ailas-word">**AILAS**</span>dolor sit.</li> -->
+        <li class="list-group-item bot-message"><span class="nickname">Ailas</span>Lorem ipsum <span class="ailas-word">**AILAS**</span>dolor sit. <span class="timestamp">11:11:11 am</span></li>
         </ul>
         <form action="">
           <div class="input-group">
@@ -86,7 +87,9 @@
           var time = msg['timestamp'];
           $('#messages').append($('<li class="list-group-item ' 
             + ((recievedPerson === "A.I.")? 'bot-message' : '') + '">')
-          .html('<span class="nickname">' + recievedPerson + "</span>" + ": " + txt + " - " + time));
+          .html('<span class="nickname">' + recievedPerson +  ": " + "</span>" 
+            + txt 
+            + "<span class="timestamp">" + time + "</span>"));
           window.scrollTo(0,document.body.scrollHeight);
         });
 
