@@ -65,8 +65,9 @@ def api_get_hint(session_id, extra_msg=None):
     try:
         hint = session['hints'][current_hint_id]
     except LookupError:
-        return flask_jsonify({'hint': 'На жаль, використані всі можливі підказки. '
-                                      'Моє слово було: {}'.format(session.get('word'))})
+        return restart_session(session_id,
+                               extra_msg='На жаль, використані всі можливі підказки. '
+                                         'Моє слово було: {}'.format(session.get('word')))
     db.sessions.update({'id': session_id},
                        {'$inc': {'current_hint_id': 1}})
 
@@ -151,7 +152,7 @@ def api_say(session_id):
         # Human's guess
         session = db.sessions.find_one({'id': session_id})
         if not session or not session.get('word'):
-            return jsonify({"hint": "Something went wrong. Please /restart session"})
+            return restart_session(session_id, extra_msg="Session started")
 
         if are_same_words(msg, session.get('word')):
             update_score(session_id, user, +50)
