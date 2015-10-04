@@ -72,7 +72,7 @@
           var recievedPerson = msg['person']
           var txt = msg['txt'];
           var time = msg['timestamp']
-          $('#messages').append($('<li>').text(recievedPerson + ": " + txt + " - " + time));
+          $('#messages').append($('<li class="list-group-item">').text(recievedPerson + ": " + txt + " - " + time));
         });
       </script>
     </div>
