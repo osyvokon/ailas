@@ -107,6 +107,17 @@ def restart_session(session_id, callback=None, extra_msg=''):
 
 
 
+@app.route("/api/session/<session_id>/scores", methods=['GET'])
+def api_session_scores(session_id):
+    scores = []
+    for s in db.scores.find({'sessionId': session_id}):
+        scores.append({
+            "user": s.get('user'),
+            "score": s.get('score')
+        })
+
+    return jsonify({'scores': scores})
+
 @app.route('/api/session/<session_id>/say', methods=['POST', 'PUT'])
 def api_say(session_id):
     msg = request.json['txt'].lower()
@@ -143,11 +154,17 @@ def api_say(session_id):
             return jsonify({"hint": "Something went wrong. Please /restart session"})
 
         if are_same_words(msg, session.get('word')):
+            update_score(session_id, user, +50)
             return jsonify({"hint": "We've got THE WINNER! My word is {}".format(session['word']),
                             "win": True})
         else:
+            update_score(session_id, user, -5)
             return api_get_hint(session_id)
 
+def update_score(session_id, user, score_inc):
+    db.scores.update({'sessionId': session_id, 'user': user},
+                     {'$inc': {"score": score_inc}},
+                     upsert=True)
 
 @app.route('/api/session/<session_id>', methods=['DELETE'])
 def api_session_delete(session_id):
