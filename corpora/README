@@ -1,1 +1,4 @@
 We don't store corpus here. Currently, it's only on developers' machines.
+
+1 Billion words dataset (English) can be downloaded here:
+http://www.statmt.org/lm-benchmark/1-billion-word-language-modeling-benchmark-r13output.tar.gz
